@@ -1,44 +1,51 @@
 import React, { useState } from "react";
+import {
+  Button,
+  Select,
+  Input,
+  DatePicker,
+  List,
+  Typography,
+  message,
+  Row,
+  Col,
+} from "antd";
 import { ref, push, get } from "firebase/database";
 import database from "./firebaseConfig";
-import CategorySelector from "./components/CategorySelector";
-import InputField from "./components/InputField";
-import DatePicker from "./components/DatePicker";
-import ActionButtons from "./components/ActionButtons";
-import RecordList from "./components/RecordList";
+import "antd/dist/reset.css";
+
+const { Option } = Select;
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(null);
   const [records, setRecords] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Сохранение данных в Firebase
   const handleSave = async () => {
     if (selectedCategory && amount && date) {
       const newRecord = {
         category: selectedCategory,
         amount: parseFloat(amount),
-        date,
+        date: date.format("YYYY-MM-DD"),
       };
 
       try {
         await push(ref(database, "records"), newRecord);
-        alert("Record saved successfully!");
+        message.success("Record saved successfully!");
         setSelectedCategory("");
         setAmount("");
-        setDate("");
+        setDate(null);
       } catch (error) {
-        console.error("Error saving record:", error);
-        alert("Failed to save record.");
+        console.error("Error saving record:", error.message);
+        message.error(`Failed to save record: ${error.message}`);
       }
     } else {
-      alert("Please fill in all fields!");
+      message.warning("Please fill in all fields!");
     }
   };
 
-  // Загрузка данных из Firebase
   const fetchRecords = async () => {
     try {
       const snapshot = await get(ref(database, "records"));
@@ -49,61 +56,104 @@ function App() {
         setShowHistory(true);
       } else {
         setRecords([]);
-        alert("No records found.");
+        message.info("No records found.");
       }
     } catch (error) {
-      console.error("Error fetching records:", error);
-      alert("Failed to load records.");
+      console.error("Error fetching records:", error.message);
+      message.error(`Failed to fetch records: ${error.message}`);
     }
   };
 
   const handleReset = () => {
     setSelectedCategory("");
     setAmount("");
-    setDate("");
+    setDate(null);
   };
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", padding: "20px" }}>
-      <h1>Spender</h1>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+      <Typography.Title level={2} style={{ textAlign: "center" }}>
+        Spender App
+      </Typography.Title>
+
       {!showHistory ? (
         <>
-          <CategorySelector
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-          />
-          <InputField amount={amount} setAmount={setAmount} />
-          <DatePicker date={date} setDate={setDate} />
-          <ActionButtons handleSave={handleSave} handleReset={handleReset} />
-          <button
-            onClick={fetchRecords}
-            style={{
-              padding: "10px 20px",
-              background: "#007BFF",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            History
-          </button>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Typography.Text>Select a Category:</Typography.Text>
+              <Select
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                style={{ width: "100%", marginTop: "5px" }}
+                placeholder="Select a category"
+              >
+                <Option value="Food">Food</Option>
+                <Option value="Shopping">Shopping</Option>
+                <Option value="Car">Car</Option>
+                <Option value="Payments">Payments</Option>
+                <Option value="Leisure">Leisure</Option>
+              </Select>
+            </Col>
+
+            <Col span={24}>
+              <Typography.Text>Enter Amount:</Typography.Text>
+              <Input
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                type="number"
+                placeholder="Enter amount"
+              />
+            </Col>
+
+            <Col span={24}>
+              <Typography.Text>Select Date:</Typography.Text>
+              <DatePicker
+                value={date}
+                onChange={setDate}
+                style={{ width: "100%" }}
+              />
+            </Col>
+
+            <Col span={24}>
+              <Row gutter={[16, 16]} justify="center">
+                <Col>
+                  <Button type="primary" onClick={handleSave}>
+                    Save
+                  </Button>
+                </Col>
+                <Col>
+                  <Button onClick={handleReset} type="default">
+                    Reset
+                  </Button>
+                </Col>
+                <Col>
+                  <Button onClick={fetchRecords} type="link">
+                    History
+                  </Button>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
         </>
       ) : (
         <>
-          <RecordList records={records} />
-          <button
+          <Typography.Title level={4}>Saved Records</Typography.Title>
+          <List
+            bordered
+            dataSource={records}
+            renderItem={(record) => (
+              <List.Item>
+                {record.category} - ${record.amount} on {record.date}
+              </List.Item>
+            )}
+          />
+          <Button
             onClick={() => setShowHistory(false)}
-            style={{
-              padding: "10px 20px",
-              background: "#007BFF",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              marginTop: "20px",
-            }}
+            type="primary"
+            style={{ marginTop: "20px" }}
           >
             Back
-          </button>
+          </Button>
         </>
       )}
     </div>
