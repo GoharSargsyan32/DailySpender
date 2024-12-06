@@ -23,7 +23,7 @@ function Form() {
   const [records, setRecords] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Save record to Firestore
+
   const handleSave = async () => {
     if (selectedCategory && amount && date) {
       const newRecord = {
@@ -33,7 +33,7 @@ function Form() {
       };
 
       try {
-        const recordsCollection = collection(db, "records"); // Reference Firestore "records" collection
+        const recordsCollection = collection(db, "records"); 
         await addDoc(recordsCollection, newRecord);
         message.success("Record saved successfully!");
         setSelectedCategory("");
@@ -48,10 +48,10 @@ function Form() {
     }
   };
 
-  // Fetch records from Firestore
+
   const fetchRecords = async () => {
     try {
-      const recordsCollection = collection(db, "records"); // Reference Firestore "records" collection
+      const recordsCollection = collection(db, "records"); 
       const querySnapshot = await getDocs(recordsCollection);
 
       if (!querySnapshot.empty) {
