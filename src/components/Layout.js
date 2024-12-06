@@ -8,7 +8,7 @@ import { auth } from "../services/firbase";
 const Layout = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const Layout = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [dispatch]);
 
   const handleLogin = () => {
     navigate(ROUTE_CONSTANTS.LOGIN);
