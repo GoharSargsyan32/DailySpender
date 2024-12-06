@@ -1,163 +1,46 @@
-import React, { useState } from "react";
-import {
-  Button,
-  Select,
-  Input,
-  DatePicker,
-  List,
-  Typography,
-  message,
-  Row,
-  Col,
-} from "antd";
-import { ref, push, get } from "firebase/database";
-import database from "./firebaseConfig";
-import "antd/dist/reset.css";
+import React from "react";
+import MainLayout from "./components/MainLayout";
+import { useEffect } from 'react';
+import { Login, Register } from './components/auth';
+import LoadingWrapper from './components/sheard/LoadingWrapper';
+import { ROUTE_CONSTANTS } from './components/core/utils/constants';
+import { RouterProvider, createBrowserRouter, createRoutesFromElements, Route, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserProfileInfo } from './state-managment/slices/userProfile';
+import Layout from "./components/Layout";
 
-const { Option } = Select;
 
-function App() {
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
 
-  const handleSave = async () => {
-    if (selectedCategory && amount && date) {
-      const newRecord = {
-        category: selectedCategory,
-        amount: parseFloat(amount),
-        date: date.format("YYYY-MM-DD"),
-      };
+const App = () => {
+  const dispatch = useDispatch();
+  const { loading, authUserInfo: { isAuth } } = useSelector(store => store.userProfile);
 
-      try {
-        await push(ref(database, "records"), newRecord);
-        message.success("Record saved successfully!");
-        setSelectedCategory("");
-        setAmount("");
-        setDate(null);
-      } catch (error) {
-        console.error("Error saving record:", error.message);
-        message.error(`Failed to save record: ${error.message}`);
-      }
-    } else {
-      message.warning("Please fill in all fields!");
-    }
-  };
 
-  const fetchRecords = async () => {
-    try {
-      const snapshot = await get(ref(database, "records"));
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const formattedData = Object.values(data);
-        setRecords(formattedData);
-        setShowHistory(true);
-      } else {
-        setRecords([]);
-        message.info("No records found.");
-      }
-    } catch (error) {
-      console.error("Error fetching records:", error.message);
-      message.error(`Failed to fetch records: ${error.message}`);
-    }
-  };
-
-  const handleReset = () => {
-    setSelectedCategory("");
-    setAmount("");
-    setDate(null);
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    dispatch(fetchUserProfileInfo());
+  },[]);
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-      <Typography.Title level={2} style={{ textAlign: "center" }}>
-        Spender App
-      </Typography.Title>
-
-      {!showHistory ? (
-        <>
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <Typography.Text>Select a Category:</Typography.Text>
-              <Select
-                value={selectedCategory}
-                onChange={setSelectedCategory}
-                style={{ width: "100%", marginTop: "5px" }}
-                placeholder="Select a category"
-              >
-                <Option value="Food">Food</Option>
-                <Option value="Shopping">Shopping</Option>
-                <Option value="Car">Car</Option>
-                <Option value="Payments">Payments</Option>
-                <Option value="Leisure">Leisure</Option>
-              </Select>
-            </Col>
-
-            <Col span={24}>
-              <Typography.Text>Enter Amount:</Typography.Text>
-              <Input
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                type="number"
-                placeholder="Enter amount"
-              />
-            </Col>
-
-            <Col span={24}>
-              <Typography.Text>Select Date:</Typography.Text>
-              <DatePicker
-                value={date}
-                onChange={setDate}
-                style={{ width: "100%" }}
-              />
-            </Col>
-
-            <Col span={24}>
-              <Row gutter={[16, 16]} justify="center">
-                <Col>
-                  <Button type="primary" onClick={handleSave}>
-                    Save
-                  </Button>
-                </Col>
-                <Col>
-                  <Button onClick={handleReset} type="default">
-                    Reset
-                  </Button>
-                </Col>
-                <Col>
-                  <Button onClick={fetchRecords} type="link">
-                    History
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </>
-      ) : (
-        <>
-          <Typography.Title level={4}>Saved Records</Typography.Title>
-          <List
-            bordered
-            dataSource={records}
-            renderItem={(record) => (
-              <List.Item>
-                {record.category} - ${record.amount} on {record.date}
-              </List.Item>
-            )}
-          />
-          <Button
-            onClick={() => setShowHistory(false)}
-            type="primary"
-            style={{ marginTop: "20px" }}
-          >
-            Back
-          </Button>
-        </>
-      )}
-    </div>
+    <LoadingWrapper loading={loading}>
+        <RouterProvider
+          router={
+            createBrowserRouter(
+              createRoutesFromElements(
+                <Route path="/" element={<Layout />}>
+                  <Route path={ROUTE_CONSTANTS.LOGIN}
+                         element={isAuth ? <Navigate to={ROUTE_CONSTANTS.FORM}/> : <Login />}/>
+                  <Route path={ROUTE_CONSTANTS.REGISTER}
+                         element={isAuth ? <Navigate to={ROUTE_CONSTANTS.FORM}/> : <Register/>}/>
+                  <Route path={ROUTE_CONSTANTS.FORM}
+                         element={<MainLayout/>}/>                 
+                </Route>
+              )
+            )
+          }
+        />
+      </LoadingWrapper>
   );
-}
+};
 
 export default App;

@@ -3,7 +3,7 @@ import React from "react";
 function RecordList({ records }) {
   return (
     <div>
-      <h3>Saved Records</h3>
+      <h3>My spends</h3>
       {records.length === 0 ? (
         <p>No records yet.</p>
       ) : (
