@@ -10,6 +10,8 @@ const History = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState('');
 
+  // eslint-disable-next-line 
+
   useEffect(() => {
     fetchExpenses();
   }, []);
