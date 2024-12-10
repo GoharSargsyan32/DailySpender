@@ -1,46 +1,50 @@
-import React from "react";
-import MainLayout from "./components/MainLayout";
-import { useEffect } from 'react';
-import { Login, Register } from './components/auth';
-import LoadingWrapper from './components/sheard/LoadingWrapper';
-import { ROUTE_CONSTANTS } from './components/core/utils/constants';
-import { RouterProvider, createBrowserRouter, createRoutesFromElements, Route, Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserProfileInfo } from './state-managment/slices/userProfile';
-import Layout from "./components/Layout";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Layout, Button } from 'antd';
+import Home from './pages/Home';
+import History from './pages/History';
+import Login from './pages/Login';
+import { auth } from './firebase';
 
+const { Header, Content } = Layout;
 
+function App() {
+  const [user, setUser] = React.useState(null);
 
-const App = () => {
-  const dispatch = useDispatch();
-  const { loading, authUserInfo: { isAuth } } = useSelector(store => store.userProfile);
+  React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
 
+  const handleLogout = async () => {
+    await auth.signOut();
+  };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    dispatch(fetchUserProfileInfo());
-  },[]);
+  if (!user) {
+    return <Login />;
+  }
 
   return (
-    <LoadingWrapper loading={loading}>
-        <RouterProvider
-          router={
-            createBrowserRouter(
-              createRoutesFromElements(
-                <Route path="/" element={<Layout />}>
-                  <Route path={ROUTE_CONSTANTS.LOGIN}
-                         element={isAuth ? <Navigate to={ROUTE_CONSTANTS.FORM}/> : <Login />}/>
-                  <Route path={ROUTE_CONSTANTS.REGISTER}
-                         element={isAuth ? <Navigate to={ROUTE_CONSTANTS.FORM}/> : <Register/>}/>
-                  <Route path={ROUTE_CONSTANTS.FORM}
-                         element={<MainLayout />}/>                 
-                </Route>
-              )
-            )
-          }
-        />
-      </LoadingWrapper>
+    <Router>
+      <Layout>
+        <Header style={{ color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>Spender App</div>
+          <Button type="default" onClick={handleLogout}>
+            Log Out
+          </Button>
+        </Header>
+        <Content style={{ padding: '20px' }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/history/:category" element={<History />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Content>
+      </Layout>
+    </Router>
   );
-};
+}
 
 export default App;
