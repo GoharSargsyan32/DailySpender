@@ -33,7 +33,7 @@ const App = () => {
                   <Route path={ROUTE_CONSTANTS.REGISTER}
                          element={isAuth ? <Navigate to={ROUTE_CONSTANTS.FORM}/> : <Register/>}/>
                   <Route path={ROUTE_CONSTANTS.FORM}
-                         element={<MainLayout/>}/>                 
+                         element={<MainLayout />}/>                 
                 </Route>
               )
             )
