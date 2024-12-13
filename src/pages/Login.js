@@ -25,6 +25,20 @@ const Login = () => {
     <div style={{ maxWidth: '400px', margin: '50px auto' }}>
       <h2>{isRegistering ? 'Register' : 'Login'}</h2>
       <Form layout="vertical" onFinish={handleSubmit}>
+      <Form.Item
+          name="firstname"
+          label="Firstname"
+          rules={[{ required: true, message: 'Please enter your email' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="lastname"
+          label="Lastname"
+          rules={[{ required: true, message: 'Please enter your email' }]}
+        >
+          <Input />
+        </Form.Item>
         <Form.Item
           name="email"
           label="Email"
@@ -39,14 +53,15 @@ const Login = () => {
         >
           <Input.Password />
         </Form.Item>
-        <Button type="primary" htmlType="submit">
-          {isRegistering ? 'Register' : 'Login'}
-        </Button>
+        
         <Button
           type="link"
           onClick={() => setIsRegistering((prev) => !prev)}
         >
           {isRegistering ? 'Already have an account? Login' : 'Don’t have an account? Register'}
+        </Button>
+        <Button type="primary" htmlType="submit">
+          {isRegistering ? 'Register' : 'Login'}
         </Button>
       </Form>
     </div>

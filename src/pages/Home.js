@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col } from 'antd';
 
+
 const categories = [
   { name: 'Food', icon: '🍴' },
   { name: 'Car', icon: '🚗' },

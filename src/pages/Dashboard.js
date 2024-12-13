@@ -16,6 +16,14 @@ function Dashboard() {
     <div style={{ padding: '20px' }}>
       <h1 style={{ textAlign: 'center' }}>Your Expenses</h1>
       <Row gutter={[16, 16]} justify="center">
+      <Col key={"Balance"} xs={24} sm={12} md={6}>
+            <Card
+              style={{ backgroundColor: 'blue', textAlign: 'center' }}
+              onClick={() => navigate(`/balance`)}
+            >
+              <h3>Balance</h3>
+            </Card>
+          </Col>
         {categories.map((category) => (
           <Col key={category.key} xs={24} sm={12} md={6}>
             <Card
@@ -26,7 +34,11 @@ function Dashboard() {
             </Card>
           </Col>
         ))}
+
+       
       </Row>
+
+      
     </div>
   );
 }

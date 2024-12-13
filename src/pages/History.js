@@ -1,20 +1,25 @@
+// History.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { List, Button, Input, message } from 'antd';
+import { List, Button, Input, message, Select } from 'antd';
 import { db, auth } from '../firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import axios from 'axios';
+
+const { Option } = Select;
 
 const History = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState('');
-
-  
+  const [currency, setCurrency] = useState('AMD');
+  const [exchangeRates, setExchangeRates] = useState({});
 
   useEffect(() => {
     fetchExpenses();
-    // eslint-disable-next-line 
+    fetchExchangeRates();
+    // eslint-disable-next-line
   }, []);
 
   const fetchExpenses = async () => {
@@ -33,6 +38,15 @@ const History = () => {
     );
   };
 
+  const fetchExchangeRates = async () => {
+    try {
+      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/AMD');
+      setExchangeRates(response.data.rates);
+    } catch (error) {
+      message.error('Failed to fetch exchange rates');
+    }
+  };
+
   const addExpense = async () => {
     if (!newExpense || isNaN(newExpense)) {
       message.error('Please enter a valid amount');
@@ -44,23 +58,41 @@ const History = () => {
       userId,
       category,
       amount: parseFloat(newExpense),
-      date: new Date().toLocaleDateString('en-GB'), // День/Месяц/Год
+      date: new Date().toLocaleDateString('en-GB'),
     });
 
     message.success('Expense added successfully!');
-    navigate('/'); // Возвращаемся на главное меню
+    fetchExpenses();
+    setNewExpense("");
+    
+  };
+
+  const convertCurrency = (amount) => {
+    if (!exchangeRates || !exchangeRates[currency]) return amount;
+    return (amount * exchangeRates[currency]).toFixed(2);
   };
 
   return (
     <div>
       <h2>{category.charAt(0).toUpperCase() + category.slice(1)} Expenses</h2>
+      <Select
+        value={currency}
+        onChange={(value) => setCurrency(value)}
+        style={{ width: 120, marginBottom: '20px' }}
+      >
+        {Object.keys(exchangeRates).map((key) => (
+          <Option key={key} value={key}>
+            {key}
+          </Option>
+        ))}
+      </Select>
       <List
         bordered
         dataSource={expenses}
         renderItem={(item) => (
           <List.Item>
             <div>
-              <strong>{item.amount} AMD</strong> - {item.date}
+              <strong>{convertCurrency(item.amount)} {currency}</strong> - {item.date}
             </div>
           </List.Item>
         )}

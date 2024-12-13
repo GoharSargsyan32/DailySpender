@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Layout, Button } from 'antd';
-import Home from './pages/Home';
 import History from './pages/History';
 import Login from './pages/Login';
 import { auth } from './firebase';
+import Balance from './pages/Balance';
+import Dashboard from './pages/Dashboard';
 
 const { Header, Content } = Layout;
 
@@ -37,8 +38,9 @@ function App() {
         </Header>
         <Content style={{ padding: '20px' }}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/history/:category" element={<History />} />
+            <Route path="/balance" element={<Balance />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Content>
